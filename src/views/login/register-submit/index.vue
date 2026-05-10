@@ -62,8 +62,9 @@ export default {
           params: { status: 'success' }
         });
       }).catch (error => {
-        Toast.fail(error.data.errmsg);
-        if (error.data.errno == 705) {
+        const message = (error && error.data && (error.data.errmsg || error.data.msg)) || '注册失败';
+        Toast.fail(message);
+        if (error && error.data && error.data.errno == 705) {
           window.location = '#/login/';
         }
       });
@@ -77,7 +78,8 @@ export default {
       authRegisterCaptcha(data).then(res => {
         this.counting = true;
       }).catch(error => {
-        alert(error.data.errmsg);
+        const message = (error && error.data && (error.data.errmsg || error.data.msg)) || '验证码发送失败';
+        alert(message);
         this.counting = true;
       });
     },

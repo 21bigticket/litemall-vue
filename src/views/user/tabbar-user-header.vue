@@ -11,7 +11,8 @@
 <script>
 import avatar_default from '@/assets/images/avatar_default.png';
 import bg_default from '@/assets/images/user_head_bg.png';
-import { getLocalStorage } from '@/utils/local-storage';
+import { getLocalStorage, setLocalStorage } from '@/utils/local-storage';
+import { authInfo } from '@/api/api';
 
 export default {
   name: 'user-header',
@@ -43,6 +44,18 @@ export default {
       );
       this.avatar = infoData.avatar || avatar_default;
       this.nickName = infoData.nickName || '昵称';
+      if (this.isLogin) {
+        authInfo().then(res => {
+          const info = (res && res.data && res.data.data) || {};
+          this.avatar = info.avatar || avatar_default;
+          this.nickName = info.nickName || '昵称';
+          setLocalStorage({
+            avatar: this.avatar,
+            nickName: this.nickName,
+            mobile: info.mobile || ''
+          });
+        }).catch(() => {});
+      }
     },
     toSetting() {
       this.$router.push({ name: 'user-information' });

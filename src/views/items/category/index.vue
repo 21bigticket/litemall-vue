@@ -60,6 +60,17 @@ export default {
     this.init();
   },
 
+  activated() {
+    this.init();
+  },
+
+  watch: {
+    itemClass(val) {
+      this.categoryId = val;
+      this.init();
+    }
+  },
+
   methods: {
     handleTabClick(index) {
       this.categoryId = this.navList[index].id;
@@ -70,6 +81,8 @@ export default {
       this.init();
     },
     init() {
+      this.loading = false;
+      this.finished = false;
       goodsCategory({ id: this.categoryId }).then(res => {
         this.navList = res.data.data.brotherCategory;
         this.currentCategory = res.data.data.currentCategory;
@@ -88,6 +101,11 @@ export default {
         this.page = 0;
         this.goodsList = [];
         this.getGoodsList();
+      }).catch(() => {
+        this.navList = [];
+        this.currentCategory = {};
+        this.goodsList = [];
+        this.finished = true;
       });
     },
     getGoodsList() {
@@ -100,6 +118,9 @@ export default {
         this.goodsList.push(...res.data.data.list);
         this.loading = false;
         this.finished = res.data.data.page >= res.data.data.pages;
+      }).catch(() => {
+        this.loading = false;
+        this.finished = true;
       });
     },
     itemClick(id) {

@@ -23,18 +23,42 @@
 <script>
 import field from '@/components/field/';
 import fieldGroup from '@/components/field-group/';
+import { authReset } from '@/api/api';
 
 export default {
   data() {
     return {
-      isErrow: true,
+      isErrow: false,
       password: '',
       passwordRepeat: ''
     };
   },
 
   methods: {
-    submitCode() {}
+    submitCode() {
+      this.isErrow = this.password !== this.passwordRepeat;
+      if (!this.password || !this.passwordRepeat) {
+        this.$toast.fail('请输入新密码');
+        return;
+      }
+      if (this.isErrow) {
+        return;
+      }
+      authReset({
+        mobile: this.$route.query.mobile || '',
+        code: this.$route.query.code || '',
+        password: this.password,
+        repeatPassword: this.passwordRepeat
+      }).then(() => {
+        this.$router.replace({
+          name: 'forgetStatus',
+          params: { status: 'success' }
+        });
+      }).catch(error => {
+        const message = (error && error.data && (error.data.errmsg || error.data.msg)) || '密码重置失败';
+        this.$toast.fail(message);
+      });
+    }
   },
 
   components: {

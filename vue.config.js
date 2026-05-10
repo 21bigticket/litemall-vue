@@ -16,6 +16,9 @@ module.exports = {
       '/wx': {
         target: 'http://localhost:8080'
       },
+      '/dev-api': {
+        target: 'http://localhost:1024'
+      },
     },
   },
   chainWebpack: config => {

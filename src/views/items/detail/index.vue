@@ -250,7 +250,7 @@ export default {
       }
       cartFastAdd(params).then(res => {
         let cartId = res.data.data;
-        setLocalStorage({ CartId: cartId });
+        setLocalStorage({ CartId: cartId, SelectedCartItemIds: cartId });
         that.showSku = false;
         this.$router.push('/order/checkout');
       });
@@ -258,9 +258,10 @@ export default {
     skuAdapter() {
       const tree = this.setSkuTree();
       const list = this.setSkuList();
+      const totalStock = list.reduce((sum, item) => sum + (item.stock_num || 0), 0);
       const skuInfo = {
         price: parseInt(this.goods.info.retailPrice), // 未选择规格时的价格
-        stock_num: 0, // TODO 总库存
+        stock_num: totalStock,
         collection_id: '', // 无规格商品skuId取collection_id，否则取所选sku组合对应的id
         none_sku: false, // 是否无规格商品
         hide_stock: true

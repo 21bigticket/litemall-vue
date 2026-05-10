@@ -63,13 +63,27 @@ export default {
       isEmpty: false
     };
   },
+  created() {
+    this.keyword = this.$route.query.keyword || '';
+  },
+  activated() {
+    this.wordHistory = this.getKeyWordHistory();
+    const queryKeyword = this.$route.query.keyword || '';
+    if (queryKeyword && queryKeyword !== this.keyword) {
+      this.keyword = queryKeyword;
+      this.reset();
+      this.searchGoods();
+    }
+  },
   methods: {
     enterSearch() {
+      this.pushHistoryTolocal(this.keyword);
       this.reset();
       this.searchGoods();
     },
     clickSearch(word) {
       this.keyword = word.trim();
+      this.pushHistoryTolocal(this.keyword);
       this.reset();
       this.searchGoods();
     },
@@ -119,6 +133,11 @@ export default {
         this.page = data.page;
         this.limit = data.limit;
         this.pages = data.pages;
+        this.isEmpty = this.list.length === 0;
+        this.finished = this.pages <= this.page;
+      }).catch(() => {
+        this.isEmpty = true;
+        this.finished = true;
       });
     },
     async loadMore() {

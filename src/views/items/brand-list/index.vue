@@ -39,7 +39,8 @@ export default {
       page: 0,
       limit: 10,
       loading: false,
-      finished: false
+      finished: false,
+      isEmpty: false
     };
   },
 
@@ -51,6 +52,7 @@ export default {
     init() {
       this.page = 0;
       this.list = [];
+      this.isEmpty = false;
       this.getBrandList();
     },
     getBrandList() {
@@ -62,6 +64,11 @@ export default {
         this.list.push(...res.data.data.list);
         this.loading = false;
         this.finished = res.data.data.page >= res.data.data.pages;
+        this.isEmpty = this.list.length === 0;
+      }).catch(() => {
+        this.loading = false;
+        this.finished = true;
+        this.isEmpty = this.list.length === 0;
       });
     },
     itemClick(id) {

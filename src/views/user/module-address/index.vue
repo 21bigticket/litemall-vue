@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { addressList, addressDetail, addressSave, addressDelete } from '@/api/api';
+import { addressList } from '@/api/api';
 import { AddressList, NavBar } from 'vant';
 import { setLocalStorage } from '@/utils/local-storage';
 
@@ -37,15 +37,15 @@ export default {
     loadAddress() {
       addressList().then(res => {
         var list = res.data.data.list;
-        for(var i = 0; i < list.length; i++ ){
-          var item = list[i]
-          this.addressList.push({
-            id: item.id,
-            name: item.name,
-            tel: item.tel,
-            address: item.province + item.city + item.county + " " + item.addressDetail
-          })
-        }
+        this.addressList = list.map(item => ({
+          id: item.id,
+          name: item.name,
+          tel: item.tel,
+          address: item.province + item.city + item.county + " " + item.addressDetail,
+          isDefault: item.isDefault
+        }));
+        const defaultItem = this.addressList.find(item => item.isDefault);
+        this.chosenAddressId = defaultItem ? defaultItem.id : (this.addressList[0] && this.addressList[0].id) || -1;
       })
     }
   },

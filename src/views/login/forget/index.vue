@@ -27,6 +27,7 @@
 <script>
 import field from '@/components/field/';
 import fieldGroup from '@/components/field-group/';
+import { authCaptcha } from '@/api/api';
 
 export default {
   data() {
@@ -39,10 +40,33 @@ export default {
 
   methods: {
     submitCode() {
-      this.$router.push({ name: 'forgetReset' });
+      if (!this.mobile || !this.code) {
+        this.$toast.fail('请填写手机号和验证码');
+        return;
+      }
+      this.$router.push({
+        name: 'forgetReset',
+        query: {
+          mobile: this.mobile,
+          code: this.code
+        }
+      });
     },
     getCode() {
-      this.counting = true;
+      if (!this.mobile) {
+        this.$toast.fail('请输入手机号');
+        return;
+      }
+      authCaptcha({
+        mobile: this.mobile,
+        type: 'reset-password'
+      }).then(() => {
+        this.counting = true;
+      }).catch(error => {
+        const message = (error && error.data && (error.data.errmsg || error.data.msg)) || '验证码发送失败';
+        this.$toast.fail(message);
+        this.counting = false;
+      });
     },
     countdownend() {
       this.counting = false;

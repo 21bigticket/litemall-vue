@@ -43,6 +43,12 @@
             {{spec}}
           </van-tag>
         </div>
+        <div v-if="item.stockEnough === false" class="stock-alert">
+          库存不足，当前仅剩 {{ item.availableStock }} 件
+        </div>
+        <div v-else-if="item.availableStock !== null" class="stock-hint">
+          可用库存 {{ item.availableStock }} 件
+        </div>
       </div>
     </van-card>
 
@@ -72,11 +78,10 @@
 </template>
 
 <script>
-import { Card, Tag, ard, Field, SubmitBar, Toast  } from 'vant';
+import { Card, Tag, Field, SubmitBar, Toast  } from 'vant';
 import { CouponCell, CouponList, Popup } from 'vant';
 import { cartCheckout, orderSubmit, couponSelectList} from '@/api/api';
 import { getLocalStorage, setLocalStorage } from '@/utils/local-storage';
-import dayjs from 'dayjs';
 
 export default {
   data() {
@@ -91,6 +96,7 @@ export default {
       orderTotalPrice: 0, //订单总价
       actualPrice: 0, //实际需要支付的总价
       message: '',
+      hasInsufficientStock: false,
 
       isDisabled: false,
       showList: false,
@@ -105,10 +111,14 @@ export default {
 
   methods: {
     onSubmit() {     
-      const {AddressId, CartId, CouponId, UserCouponId} = getLocalStorage('AddressId', 'CartId', 'CouponId', 'UserCouponId');
+      const {AddressId, CartId, CouponId, UserCouponId, SelectedCartItemIds} = getLocalStorage('AddressId', 'CartId', 'CouponId', 'UserCouponId', 'SelectedCartItemIds');
 
       if (AddressId === null || AddressId === "0") {
         Toast.fail('请设置收货地址');
+        return;
+      }
+      if (this.hasInsufficientStock) {
+        Toast.fail('部分商品库存不足，请返回购物车调整后再试');
         return;
       }
 
@@ -120,13 +130,14 @@ export default {
         cartId: CartId,
         couponId: CouponId,
         userCouponId: UserCouponId,
+        selectedItemIds: SelectedCartItemIds || CartId,
         grouponLinkId: 0,
         grouponRulesId: 0,
         message: this.message
       }).then(res => {
         
         // 下单成功，重置下单参数。
-        setLocalStorage({AddressId: 0, CartId: 0, CouponId: 0});
+        setLocalStorage({AddressId: 0, CartId: 0, CouponId: 0, UserCouponId: 0, SelectedCartItemIds: 0});
 
         let orderId = res.data.data.orderId;
         this.$router.push({
@@ -154,8 +165,7 @@ export default {
       return '没有可用优惠券'
     },
     getCoupons() {
-      const {AddressId, CartId, CouponId} = getLocalStorage('AddressId', 'CartId', 'CouponId');
-      couponSelectList({cartId: CartId, grouponRulesId: 0}).then(res => {
+      couponSelectList({selectedItemIds: this.checkedGoodsList.map(item => item.id)}).then(res => {
         var cList = res.data.data.list;
         this.coupons = []
         this.disabledCoupons = [];
@@ -185,9 +195,16 @@ export default {
       })
     },
     init() {
-      const {AddressId, CartId, CouponId, UserCouponId} = getLocalStorage('AddressId', 'CartId', 'CouponId', 'UserCouponId');
+      const {AddressId, CartId, CouponId, UserCouponId, SelectedCartItemIds} = getLocalStorage('AddressId', 'CartId', 'CouponId', 'UserCouponId', 'SelectedCartItemIds');
 
-      cartCheckout({cartId: CartId, addressId: AddressId, couponId: CouponId, userCouponId: UserCouponId, grouponRulesId: 0}).then(res => {
+      cartCheckout({
+        cartId: SelectedCartItemIds || CartId,
+        selectedItemIds: SelectedCartItemIds || CartId,
+        addressId: AddressId,
+        couponId: CouponId,
+        userCouponId: UserCouponId,
+        grouponRulesId: 0
+      }).then(res => {
           var data = res.data.data
 
           this.checkedGoodsList = data.checkedGoodsList;
@@ -199,8 +216,10 @@ export default {
           this.freightPrice= data.freightPrice;
           this.goodsTotalPrice= data.goodsTotalPrice;
           this.orderTotalPrice= data.orderTotalPrice;
+          this.hasInsufficientStock = !!data.hasInsufficientStock;
+          this.isDisabled = !!data.hasInsufficientStock;
 
-          setLocalStorage({AddressId: data.addressId, CartId: data.cartId, CouponId: data.couponId, UserCouponId: data.userCouponId});
+          setLocalStorage({AddressId: data.addressId, CartId: data.cartId, CouponId: data.couponId, UserCouponId: data.userCouponId, SelectedCartItemIds: data.cartId});
       });
 
     },
@@ -220,7 +239,7 @@ export default {
       this.init()
     },
     onExchange() {
-      this.$toast("兑换暂不支持");
+      this.$toast("当前暂不支持优惠券兑换");
     }    
   },
 
@@ -241,5 +260,17 @@ export default {
 <style lang="scss" scoped>
 .order-coupon {
   margin-top: 10px;
+}
+
+.stock-alert {
+  margin-top: 6px;
+  color: #ee0a24;
+  font-size: 12px;
+}
+
+.stock-hint {
+  margin-top: 6px;
+  color: #969799;
+  font-size: 12px;
 }
 </style>

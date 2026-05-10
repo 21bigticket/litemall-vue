@@ -32,7 +32,7 @@
                 </div>
               </div>
             </van-card>
-            <div class="total">合计: {{el.actualPrice * 100 | yuan}}（含运费{{el.post_fee | yuan}}）</div>
+            <div class="total">合计: {{el.actualPrice * 100 | yuan}}（含运费{{el.post_fee * 100 | yuan}}）</div>
 
             <div slot="footer"
                  class="footer_btn">
@@ -116,11 +116,15 @@ export default {
       });
     },
     delOrder(id) {
-      let that = this;
+      const target = this.orderList.find(item => item.id === id);
+      if (!target) {
+        this.$toast('订单不存在');
+        return;
+      }
       this.$dialog
         .confirm({ message: '确定要删除该订单吗?' })
         .then(() => {
-          orderDelete({ orderId: id }).then(() => {
+          orderDelete({ orderNo: target.orderSn }).then(() => {
             this.init();
             this.$toast('已删除订单');
           });
@@ -128,10 +132,11 @@ export default {
         .catch(() => {});
     },
     cancelOrder(id) {
+      const target = this.orderList.find(item => item.id === id);
       this.$dialog
         .confirm({ message: '确定要取消该订单吗?' })
         .then(() => {
-          orderCancel({ orderId: id }).then(() => {
+          orderCancel({ orderNo: target.orderSn }).then(() => {
             this.init();
             this.$toast('已取消该订单');
           });
@@ -150,12 +155,13 @@ export default {
         .catch(() => {});
     },    
     confirmOrder(id) {
+      const target = this.orderList.find(item => item.id === id);
       this.$dialog
         .confirm({
           message: '请确认收到货物, 确认收货后无法撤销!'
         })
         .then(() => {
-          orderConfirm({ orderId: id }).then(() => {
+          orderConfirm({ orderNo: target.orderSn }).then(() => {
             this.init();
             this.$toast('已确认收货');
           });

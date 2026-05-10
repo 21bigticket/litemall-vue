@@ -90,13 +90,18 @@ export default {
         this.userInfo = res.data.data.userInfo;
         setLocalStorage({
           Authorization: res.data.data.token,
+          userId: this.userInfo.userId,
+          userName: this.userInfo.userName,
           avatar: this.userInfo.avatarUrl,
-          nickName: this.userInfo.nickName
+          nickName: this.userInfo.nickName,
+          mobile: this.userInfo.mobile || '',
+          email: this.userInfo.email || ''
         });
 
         this.routerRedirect();
       }).catch(error => {
-        Toast.fail(error.data.errmsg);
+        const message = (error && error.data && (error.data.errmsg || error.data.msg)) || '登录失败';
+        Toast.fail(message);
       });
     },
 

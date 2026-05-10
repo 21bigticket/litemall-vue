@@ -36,9 +36,8 @@
 
 <script>
 import { Uploader, Picker, Popup, Button } from 'vant';
-import { removeLocalStorage } from '@/utils/local-storage';
-import { getLocalStorage } from '@/utils/local-storage';
-import { authInfo, authLogout, authProfile } from '@/api/api';
+import { removeLocalStorage, setLocalStorage } from '@/utils/local-storage';
+import { authInfo, authLogout, authProfile, authUploadAvatar } from '@/api/api';
 
 export default {
   data() {
@@ -68,9 +67,26 @@ export default {
     this.getUserInfo();
   },
 
+  activated() {
+    this.getUserInfo();
+  },
+
   methods: {
-    avatarAfterRead(file) {
-      console.log(file);
+    async avatarAfterRead(file) {
+      const rawFile = file && (file.file || file);
+      if (!rawFile) {
+        this.$toast.fail('请选择头像文件');
+        return;
+      }
+      try {
+        const avatarUrl = await authUploadAvatar(rawFile);
+        this.avatar = avatarUrl;
+        setLocalStorage({ avatar: this.avatar });
+        this.$toast.success('保存成功');
+      } catch (error) {
+        const message = (error && error.data && (error.data.errmsg || error.data.msg)) || error.message || '上传失败';
+        this.$toast.fail(message);
+      }
     },
     onSexConfirm(value, index) {
       this.showSex = false;
@@ -81,13 +97,22 @@ export default {
         this.nickName = res.data.data.nickName;
         this.gender = res.data.data.gender;
         this.mobile = res.data.data.mobile;
+        setLocalStorage({
+          avatar: this.avatar,
+          nickName: this.nickName,
+          mobile: this.mobile
+        });
       })
     },
     loginOut() {
-      authLogout().then(res => {
+      authLogout().finally(() => {
         removeLocalStorage('Authorization')
+        removeLocalStorage('userId')
+        removeLocalStorage('userName')
         removeLocalStorage('avatar')
         removeLocalStorage('nickName')
+        removeLocalStorage('mobile')
+        removeLocalStorage('email')
         this.$router.push({ name: 'home' });
       });
 

@@ -40,7 +40,8 @@
 
 
 <script>
-import { authCaptcha } from '@/api/api';
+import { authCaptcha, authChangeMobile, authInfo } from '@/api/api';
+import { setLocalStorage } from '@/utils/local-storage';
 
 import { Field } from 'vant';
 
@@ -52,7 +53,17 @@ export default {
     counting: false
   }),
 
+  created() {
+    this.loadProfile();
+  },
+
   methods: {
+    loadProfile() {
+      authInfo().then(res => {
+        const info = (res && res.data && res.data.data) || {};
+        this.mobile = info.mobile || '';
+      }).catch(() => {});
+    },
     getCode() {
       if (!this.counting && this.vuelidate()) {
         authCaptcha({
@@ -76,10 +87,29 @@ export default {
         this.$toast.fail('请输入号码');
         return false;
       }
+      if(this.password === ''){
+        this.$toast.fail('请输入登录密码');
+        return false;
+      }
       return true;
     },
     saveMobile() {
-      console.log('保存手机号');
+      if (!this.password || !this.mobile || !this.code) {
+        this.$toast.fail('请填写完整信息');
+        return;
+      }
+      authChangeMobile({
+        password: this.password,
+        mobile: this.mobile,
+        code: this.code
+      }).then(() => {
+        setLocalStorage({ mobile: this.mobile });
+        this.$toast.success('保存成功');
+        this.$router.back();
+      }).catch(error => {
+        const message = (error && error.data && (error.data.errmsg || error.data.msg)) || '保存失败';
+        this.$toast.fail(message);
+      });
     }
   },
 

@@ -207,7 +207,16 @@ export default {
 
   data() {
     return {
-      shopInfos: [],
+      shopInfos: {
+        banner: [],
+        channel: [],
+        couponList: [],
+        grouponList: [],
+        brandList: [],
+        newGoodsList: [],
+        hotGoodsList: [],
+        topicList: []
+      },
       isLoading: false
     };
   },
@@ -241,8 +250,22 @@ export default {
       });
     },
     initViews() {
+      this.isLoading = true;
       getHome().then(res => {
         this.shopInfos = res.data.data;
+      }).catch(() => {
+        this.shopInfos = {
+          banner: [],
+          channel: [],
+          couponList: [],
+          grouponList: [],
+          brandList: [],
+          newGoodsList: [],
+          hotGoodsList: [],
+          topicList: []
+        };
+      }).finally(() => {
+        this.isLoading = false;
       });
     }
   },

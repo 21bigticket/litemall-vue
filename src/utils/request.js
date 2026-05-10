@@ -10,10 +10,12 @@ const service = axios.create({
 // request interceptor
 service.interceptors.request.use(
     config => {
-    if (!config.headers['X-Litemall-Token']) {
-      config.headers['X-Litemall-Token'] = `${window.localStorage.getItem(
-        'Authorization'
-      ) || ''}`;
+    const accessToken = window.localStorage.getItem('Authorization') || '';
+    if (accessToken && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    if (accessToken && !config.headers['X-Litemall-Token']) {
+      config.headers['X-Litemall-Token'] = accessToken;
     }
     return config;
   },
@@ -24,6 +26,18 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data
+
+    if (typeof res.code !== 'undefined') {
+      const businessCode = res.code && typeof res.code === 'object' && typeof res.code.value !== 'undefined'
+        ? res.code.value
+        : res.code;
+
+      if (businessCode === 0) {
+        return response;
+      }
+
+      return Promise.reject(response);
+    }
 
     if (res.errno === 501) {
         Toast.fail('请登录');
@@ -48,6 +62,13 @@ service.interceptors.response.use(
     }
   }, error => {
     console.log('err' + error)// for debug
+    if (error && error.response && error.response.status === 401) {
+      Toast.fail('请重新登录');
+      setTimeout(() => {
+        window.location = '#/login/'
+      }, 1000)
+      return Promise.reject(error)
+    }
     Dialog.alert({
         title: '警告',
         message: '登录连接超时'

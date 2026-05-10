@@ -42,7 +42,8 @@ export default {
   data() {
     return {
       brand: {},
-      brandGoods: []
+      brandGoods: [],
+      loading: false
     };
   },
 
@@ -52,16 +53,23 @@ export default {
 
   methods: {
     init() {
+      this.loading = true;
       brandDetail({
         id: this.brandId
       }).then(res => {
         this.brand = res.data.data;
+      }).catch(() => {
+        this.brand = {};
       });
 
       goodsList({
         brandId: this.brandId
       }).then(res => {
         this.brandGoods = res.data.data.list;
+      }).catch(() => {
+        this.brandGoods = [];
+      }).finally(() => {
+        this.loading = false;
       });
     },
     itemClick(id) {

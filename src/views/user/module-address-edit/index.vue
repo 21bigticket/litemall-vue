@@ -30,8 +30,8 @@ export default {
     };
   },
   created() {
-    this.addressId = this.$route.query.addressId;
-    if (this.addressId !== -1 && this.addressId !== 0) {
+    this.addressId = Number(this.$route.query.addressId || 0);
+    if (this.addressId > 0) {
       this.init();
     }
   },

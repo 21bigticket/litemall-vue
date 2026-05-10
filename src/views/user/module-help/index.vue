@@ -10,24 +10,14 @@
 
 <script>
 import { Collapse, CollapseItem } from 'vant';
-import { issueList } from '@/api/api';
+import issueList from './help-issues';
 
 export default {
   data() {
     return {
       activeNames: [-1],
-      issueList: []
+      issueList
     };
-  },
-  created() {
-    this.getIssueList();
-  },
-  methods: {
-    getIssueList() {
-      issueList().then(res => {
-        this.issueList = res.data.data.list
-      })
-    }
   },
 
   components: {

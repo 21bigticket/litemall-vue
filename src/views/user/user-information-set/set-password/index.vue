@@ -49,7 +49,7 @@
 
 
 <script>
-import { authCaptcha, authReset, authLogout } from '@/api/api';
+import { authCaptcha, authInfo, authReset } from '@/api/api';
 import { removeLocalStorage } from '@/utils/local-storage';
 import { Field, Toast } from 'vant';
 
@@ -62,23 +62,53 @@ export default {
     counting: false
   }),
 
+  created() {
+    this.loadProfile();
+  },
+
   methods: {
+    loadProfile() {
+      authInfo().then(res => {
+        const info = (res && res.data && res.data.data) || {};
+        this.mobile = info.mobile || '';
+      }).catch(() => {});
+    },
     modifypassword() {
       if (this.passwordValid()) {
         authReset({
           password: this.password,
+          repeatPassword: this.password2,
           mobile: this.mobile,
           code: this.code
         })
         .then(() => {
-          this.$dialog.alert({ message: '保存成功, 请重新登录.' })
-          authLogout();
+          this.$dialog.alert({ message: '保存成功, 请重新登录.' }).then(() => {
+            removeLocalStorage('Authorization', 'userId', 'userName', 'avatar', 'nickName', 'mobile', 'email');
+            this.$router.replace({ name: 'login' });
+          });
         }).catch (error => {
-        Toast.fail(error.data.errmsg);
+          const message = (error && error.data && (error.data.errmsg || error.data.msg)) || '保存失败';
+          Toast.fail(message);
         });
       }
     },
     passwordValid() {
+      if (!this.mobile) {
+        Toast.fail('请输入手机号');
+        return false;
+      }
+      if (!this.code) {
+        Toast.fail('请输入验证码');
+        return false;
+      }
+      if (!this.password) {
+        Toast.fail('请输入新密码');
+        return false;
+      }
+      if (this.password !== this.password2) {
+        Toast.fail('两次密码输入不一致');
+        return false;
+      }
       return true;
     },
     getCode() {
@@ -101,6 +131,9 @@ export default {
 
       }
     },
+    countdownend() {
+      this.counting = false;
+    }
   },
 
   components: {

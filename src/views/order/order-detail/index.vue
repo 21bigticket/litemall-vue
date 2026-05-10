@@ -118,7 +118,7 @@ export default {
       this.$dialog
         .confirm({ message: '确定要删除该订单吗?' })
         .then(() => {
-          orderDelete({ orderId: id }).then(() => {
+          orderDelete({ orderNo: this.orderInfo.orderSn }).then(() => {
             this.$toast('已删除订单');
             this.$router.go(-1);
           });
@@ -129,7 +129,7 @@ export default {
       this.$dialog
         .confirm({ message: '确定要取消该订单吗?' })
         .then(() => {
-          orderDelete({ orderId: id }).then(() => {
+          orderCancel({ orderNo: this.orderInfo.orderSn }).then(() => {
             this.init();
             this.$toast('已取消该订单');
           });
@@ -142,7 +142,7 @@ export default {
           message: '请确认收到货物, 确认收货后无法撤销!'
         })
         .then(() => {
-          orderConfirm({ orderId: id }).then(() => {
+          orderConfirm({ orderNo: this.orderInfo.orderSn }).then(() => {
             this.init();
             this.$toast('已确认收货');
           });
@@ -161,7 +161,7 @@ export default {
         .catch(() => {});
     },
     commentOrder(id) {},
-    toPay(id) {
+    payOrder(id) {
       this.$router.push({ name: 'payment', params: { orderId: id } });
     },
     init() {

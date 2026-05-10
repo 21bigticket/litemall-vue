@@ -53,6 +53,12 @@ export default {
     this.initData();
   },
 
+  activated() {
+    if (!this.categoryList.length) {
+      this.initData();
+    }
+  },
+
   methods: {
     initData() {
       catalogList().then(res => {
@@ -60,6 +66,10 @@ export default {
         this.categoryList = data.categoryList;
         this.currentCategory = res.data.data.currentCategory;
         this.currentSubCategoryList = data.currentSubCategory;
+      }).catch(() => {
+        this.categoryList = [];
+        this.currentCategory = {};
+        this.currentSubCategoryList = [];
       });
     },
     changeCatalog(id) {
@@ -67,6 +77,9 @@ export default {
         let data = res.data.data;
         this.currentCategory = data.currentCategory;        
         this.currentSubCategoryList = data.currentSubCategory;
+      }).catch(() => {
+        this.currentCategory = {};
+        this.currentSubCategoryList = [];
       });
     },
     toItemList(id) {

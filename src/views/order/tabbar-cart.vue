@@ -85,9 +85,7 @@ export default {
       let number = arg[0];
       cartUpdate({
         number: number,
-        goodsId: item.goodsId,
-        id: item.id,
-        productId: item.productId
+        id: item.id
       });
     },
     init() {
@@ -95,6 +93,7 @@ export default {
         this.goods = res.data.data.cartList;
         this.allGoods = this.getAllList();
         this.checkedGoods = this.getCheckedList(this.goods);
+        this.checkedAll = this.checkedGoods.length === this.allGoods.length && this.allGoods.length > 0;
       });
     },
     getAllList() {
@@ -114,15 +113,7 @@ export default {
       return result;
     },
     cartSubmit(data) {
-      let productIds = [];
-      let checkedGoods = this.checkedGoods;
-      _.each(checkedGoods, id => {
-        productIds.push(
-          _.find(this.goods, vv => {
-            return id === vv.id;
-          }).productId
-        );
-      });
+      const itemIds = [...this.checkedGoods];
       if (this.isEditor) {
         this.$dialog
           .confirm({
@@ -130,11 +121,11 @@ export default {
             cancelButtonText: '再想想'
           })
           .then(() => {
-            this.deleteNext(productIds);
+            this.deleteNext(itemIds);
           });
       } else {
         this.isSubmit = true;
-        setLocalStorage({AddressId: 0, CartId: 0, CouponId: 0});
+        setLocalStorage({AddressId: 0, CartId: itemIds.join(','), CouponId: 0, UserCouponId: 0, SelectedCartItemIds: itemIds.join(',')});
         this.$router.push('/order/checkout');
       }
     },
@@ -146,57 +137,32 @@ export default {
       }
     },
     deleteCart(o) {
-      let productId = this.goods[o].productId;
+      let itemId = this.goods[o].id;
       this.$dialog
         .confirm({ message: '确定删除所选商品吗', cancelButtonText: '再想想' })
         .then(() => {
           this.$nextTick(() => {
-            this.deleteNext(productId);
+            this.deleteNext(itemId);
           });
         });
     },
     toggle(index) {
-      let addProductIds = [];
-      _.each(index, v => {
-        let productId = _.find(this.goods, result => {
-          return result.id === v;
-        }).productId;
-        addProductIds.push(productId);
-      });
-
-      let delProductIds = [];
-      _.each(_.difference(this.allGoods, index), v => {
-        let productId = _.find(this.goods, result => {
-          return result.id === v;
-        }).productId;
-        delProductIds.push(productId);
-      });
-      if (delProductIds.length > 0) {
-        cartChecked({productIds: delProductIds, isChecked: 0});
-      }
-      if (addProductIds.length > 0) {
-        cartChecked({productIds: addProductIds, isChecked: 1});
-      }
-
-      if(index.length === this.allGoods.length){
-        this.checkedAll = true
-      }
-      else{
-        this.checkedAll = false
-      }
+      cartChecked({ itemIds: index });
+      this.checkedAll = index.length === this.allGoods.length && this.allGoods.length > 0;
     },
     deleteNext(o) {
-      let productIds = [];
+      let itemIds = [];
       if (o instanceof Array) {
-        productIds = o;
+        itemIds = o;
       } else {
-        productIds.push(o);
+        itemIds.push(o);
       }
 
-      cartDelete({productIds: productIds}).then(res => {
+      cartDelete({itemIds: itemIds}).then(res => {
         this.goods = res.data.data.cartList;
         this.allGoods = this.getAllList();
         this.checkedGoods = this.getCheckedList(this.goods);
+        this.checkedAll = this.checkedGoods.length === this.allGoods.length && this.allGoods.length > 0;
       });
     }
   },

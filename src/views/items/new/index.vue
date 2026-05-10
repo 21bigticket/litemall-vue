@@ -49,6 +49,8 @@ export default {
     init() {
       this.page = 0;
       this.list = [];
+      this.loading = false;
+      this.finished = false;
       this.getNewtList();
     },
     getNewtList() {
@@ -61,6 +63,9 @@ export default {
         this.list.push(...res.data.data.list);
         this.loading = false;
         this.finished = res.data.data.page >= res.data.data.pages;
+      }).catch(() => {
+        this.loading = false;
+        this.finished = true;
       });
     },
     itemClick(id) {
