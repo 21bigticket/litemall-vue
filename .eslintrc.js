@@ -4,17 +4,21 @@ module.exports = {
     node: true,
     es6: true
   },
-  // extends: ['plugin:vue/essential', '@vue/prettier'],
-  // rules: {
-  //   camelcase: 'off',
-  //   quotes: ['error', 'single'],
-  //   indent: ['error', 2, { SwitchCase: 1 }],
-  //   'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
-  //   'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
-  // },
+  parser: 'vue-eslint-parser',
   parserOptions: {
     parser: 'babel-eslint',
-    ecmaVersion:"latest",//最新版，或者你需要的 ECMAScript 版本
-    sourceType:"module" // 允许使用 import/export 语句
+    ecmaVersion: 2020,
+    sourceType: 'module'
+  },
+  extends: ['eslint:recommended'],
+  plugins: ['vue'],
+  rules: {
+    camelcase: 'off',
+    'no-console': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+    'vue/no-unused-components': 'warn',
+    'vue/no-unused-vars': 'warn',
+    'vue/require-v-for-key': 'error',
+    'vue/no-use-v-if-with-v-for': 'error'
   }
 };

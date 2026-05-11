@@ -48,7 +48,8 @@ module.exports = {
     loaderOptions: {
       sass: {
         data:
-          '@import "@/assets/scss/_var.scss";@import "@/assets/scss/_mixin.scss";'
+          '@import "@/assets/scss/_var.scss";@import "@/assets/scss/_mixin.scss";',
+        silenceDeprecations: ['import', 'legacy-js-api']
       }
     }
   }

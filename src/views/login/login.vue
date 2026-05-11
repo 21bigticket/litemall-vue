@@ -10,28 +10,31 @@
     <md-field-group>
       <md-field
         v-model="account"
-        icon="username"
-        placeholder="请输入测试账号 user123"
+        icon="mobile"
+        placeholder="请输入手机号"
         right-icon="clear-full"
         name="user"
         data-vv-as="帐号"
         @right-click="clearText"
+        @blur="validateAccount"
       />
+      <div class="field_error" v-show="accountError">{{ accountError }}</div>
 
       <md-field
         v-model="password"
         icon="lock"
-        placeholder="请输入测试密码 user123"
+        placeholder="请输入密码"
         :type="visiblePass ? 'text' : 'password'"
         :right-icon="visiblePass ? 'eye-open' : 'eye-close'"
         data-vv-as="密码"
         name="password"
         @right-click="visiblePass = !visiblePass"
       />
+      <div class="field_error" v-show="passwordError">{{ passwordError }}</div>
 
       <div class="clearfix">
         <div class="float-l">
-          <router-link to="/login/registerGetCode">免费注册</router-link>
+          <router-link to="/login/register">免费注册</router-link>
         </div>
         <div class="float-r">
           <router-link to="/login/forget">忘记密码</router-link>
@@ -53,7 +56,7 @@ import fieldGroup from '@/components/field-group/';
 
 import { authLoginByAccount } from '@/api/api';
 import { setLocalStorage } from '@/utils/local-storage';
-import { emailReg, mobileReg } from '@/utils/validate';
+import { mobileReg } from '@/utils/validate';
 
 import { Toast } from 'vant';
 
@@ -71,6 +74,8 @@ export default {
       password: '',
       visiblePass: false,
       isLogining: false,
+      accountError: '',
+      passwordError: '',
       userInfo: {}
     };
   },
@@ -80,8 +85,32 @@ export default {
       this.account = '';
     },
 
-    validate() {
+    validateAccount() {
+      if (!this.account) {
+        this.accountError = '请输入手机号';
+        return false;
+      }
+      if (!mobileReg.test(this.account)) {
+        this.accountError = '手机号格式不正确';
+        return false;
+      }
+      this.accountError = '';
+      return true;
+    },
 
+    validatePassword() {
+      if (!this.password) {
+        this.passwordError = '请输入密码';
+        return false;
+      }
+      this.passwordError = '';
+      return true;
+    },
+
+    validate() {
+      const accountOk = this.validateAccount();
+      const passwordOk = this.validatePassword();
+      return accountOk && passwordOk;
     },
 
     login() {
@@ -106,42 +135,21 @@ export default {
     },
 
     loginSubmit() {
+      if (!this.validate()) return;
       this.isLogining = true;
-      try {
-        this.validate();
-        this.login();
-        this.isLogining = false;
-      } catch (err) {
-        console.log(err.message);
-        this.isLogining = false;
-      }
+      this.login();
+      this.isLogining = false;
     },
 
     routerRedirect() {
-      // const { query } = this.$route;
-      // this.$router.replace({
-      //   name: query.redirect || 'home',
-      //   query: query
-      // });
       window.location = '#/user/';
     },
 
     getLoginData() {
-      const password = this.password;
-      const account = this.getUserType(this.account);
       return {
-        [account]: this.account,
-        password: password
+        mobile: this.account,
+        password: this.password
       };
-    },
-
-    getUserType(account) {
-      const accountType = mobileReg.test(account)
-        ? 'mobile'
-        : emailReg.test(account)
-        ? 'email'
-        : 'username';
-      return accountType;
     }
   }
 };
@@ -185,5 +193,10 @@ export default {
   position: absolute;
   bottom: 30px;
   width: 100%;
+}
+.field_error {
+  color: #f44;
+  font-size: 12px;
+  padding: 4px 0 0 10px;
 }
 </style>

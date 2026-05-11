@@ -9,15 +9,9 @@ export default [
     component: () => import('@/views/login/login')
   },
   {
-    path: '/login/registerGetCode',
-    name: 'registerGetCode',
+    path: '/login/register',
+    name: 'register',
     component: () => import('@/views/login/register-getCode')
-  },
-  {
-    path: '/login/registerSubmit/:phone',
-    name: 'registerSubmit',
-    props: true,
-    component: () => import('@/views/login/register-submit')
   },
   {
     path: '/login/registerStatus/:status',
@@ -31,12 +25,7 @@ export default [
     component: () => import('@/views/login/forget')
   },
   {
-    path: '/login/forget/reset',
-    name: 'forgetReset',
-    component: () => import('@/views/login/forget-reset')
-  },
-  {
-    path: '/login/forget/reset/:status',
+    path: '/login/forget/status/:status',
     name: 'forgetStatus',
     props: true,
     component: () => import('@/views/login/forget-status')

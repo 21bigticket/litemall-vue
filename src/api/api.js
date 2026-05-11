@@ -2,6 +2,7 @@ import request from '@/utils/request'
 
 const ZebraApiBase = process.env.VUE_APP_TRIPLE_API || '/dev-api';
 const ZebraMemberService = `${ZebraApiBase}/zebra-member/member.MemberService`;
+const ZebraMemberAuthService = `${ZebraApiBase}/zebra-member/member_auth.MemberAuthService`;
 const ZebraGoodsService = `${ZebraApiBase}/zebra-goods/goods.GoodsService`;
 const ZebraSkuService = `${ZebraApiBase}/zebra-goods/sku.SkuService`;
 const ZebraCategoryService = `${ZebraApiBase}/zebra-goods/category.CategoryService`;
@@ -542,7 +543,7 @@ export async function catalogCurrent(query) {
 const AuthLoginByWeixin='/auth/login_by_weixin'; //微信登录
 
 
-const AuthLoginByAccount=`${ZebraMemberService}/Login`; //账号登录
+const AuthLoginByAccount=`${ZebraMemberAuthService}/Login`; //账号登录
 export function authLoginByAccount(data) {
   const account = data.username || data.mobile || data.email || '';
   return request({
@@ -569,7 +570,7 @@ export function authLogout() {
   const userId = Number(window.localStorage.getItem('userId') || 0);
   return request({
     baseURL: '',
-    url: `${ZebraMemberService}/Logout`,
+    url: `${ZebraMemberAuthService}/Logout`,
     method: 'post',
     data: {
       user_id: userId
@@ -598,7 +599,7 @@ const AuthProfile=`${ZebraMemberService}/Update`; //账号修改
 export function authProfile(data) {
   return request({
     baseURL: '',
-    url: `${ZebraMemberService}/UpdateProfile`,
+    url: `${ZebraMemberAuthService}/UpdateProfile`,
     method: 'post',
     data: {
       nick_name: data.nickname || data.nickName || '',
@@ -632,7 +633,7 @@ export async function authUploadAvatar(file) {
   }
   await request({
     baseURL: '',
-    url: `${ZebraMemberService}/UploadAvatar`,
+    url: `${ZebraMemberAuthService}/UploadAvatar`,
     method: 'post',
     data: {
       file_name: avatarUrl
@@ -640,18 +641,16 @@ export async function authUploadAvatar(file) {
   });
   return avatarUrl;
 }
-const AuthRegister=`${ZebraMemberService}/Register`; //账号注册
+const AuthRegister=`${ZebraMemberAuthService}/Register`; //账号注册
 export function authRegister(data) {
   return request({
     baseURL: '',
     url: AuthRegister,
     method: 'post',
     data: {
-      user_name: data.username,
       password: data.password,
       repeat_password: data.repeatPassword,
-      phone: data.mobile,
-      verify_code: data.code
+      phone: data.mobile
     }
   }).then(res => Object.assign({}, res, {
     data: {
@@ -663,11 +662,25 @@ export function authRegister(data) {
     }
   }))
 }
+const AuthChangePassword=`${ZebraMemberAuthService}/ChangePassword`; //通过原密码修改密码
+export function authChangePassword(data) {
+  return request({
+    baseURL: '',
+    url: AuthChangePassword,
+    method: 'post',
+    data: {
+      account: data.mobile || data.account || '',
+      old_password: data.oldPassword || '',
+      new_password: data.newPassword || '',
+      repeat_password: data.repeatPassword || ''
+    }
+  })
+}
 const AuthReset='/auth/reset'; //账号密码重置
 export function authReset(data) {
   return request({
     baseURL: '',
-    url: `${ZebraMemberService}/ResetPassword`,
+    url: `${ZebraMemberAuthService}/ResetPassword`,
     method: 'post',
     data: {
       mobile: data.mobile || '',
@@ -681,7 +694,7 @@ const AuthRegisterCaptcha='/auth/regCaptcha'; //注册验证码
 export function authRegisterCaptcha(data) {
   return request({
     baseURL: '',
-    url: `${ZebraMemberService}/SendVerifyCode`,
+    url: `${ZebraMemberAuthService}/SendVerifyCode`,
     method: 'post',
     data: {
       mobile: data.mobile || '',
@@ -693,7 +706,7 @@ const AuthCaptcha='/auth/captcha'; //验证码
 export function authCaptcha(data) {
   return request({
     baseURL: '',
-    url: `${ZebraMemberService}/SendVerifyCode`,
+    url: `${ZebraMemberAuthService}/SendVerifyCode`,
     method: 'post',
     data: {
       mobile: data.mobile || '',
@@ -704,7 +717,7 @@ export function authCaptcha(data) {
 export function authChangeMobile(data) {
   return request({
     baseURL: '',
-    url: `${ZebraMemberService}/ChangeMobile`,
+    url: `${ZebraMemberAuthService}/ChangeMobile`,
     method: 'post',
     data: {
       user_id: localUserId(),
